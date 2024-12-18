@@ -1,0 +1,94 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  password      String
+  firstName     String
+  lastName      String
+  companyName   String?
+  phone         String?
+  role          Role      @default(USER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  listings      Listing[]
+  subscriptions Subscription[]
+}
+
+model Listing {
+  id              String    @id @default(uuid())
+  title           String
+  description     String
+  price           Float
+  category        String
+  location        String
+  employees       Int
+  established     Int
+  monthlyRevenue  Float
+  yearlyProfit    Float
+  status          ListingStatus @default(PENDING)
+  isFeatured      Boolean   @default(false)
+  featuredUntil   DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+  images          Image[]
+}
+
+model Image {
+  id        String   @id @default(uuid())
+  url       String
+  listingId String
+  listing   Listing  @relation(fields: [listingId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Subscription {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  type      SubscriptionType
+  startDate DateTime @default(now())
+  endDate   DateTime
+  price     Float
+  status    PaymentStatus @default(PENDING)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum Role {
+  USER
+  ADMIN
+  MODERATOR
+}
+
+enum ListingStatus {
+  PENDING
+  ACTIVE
+  EXPIRED
+  DELETED
+}
+
+enum SubscriptionType {
+  BASIC
+  FEATURED
+  PREMIUM
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
